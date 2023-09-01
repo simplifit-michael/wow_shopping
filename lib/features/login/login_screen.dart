@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:wow_shopping/backend/auth_repo.dart';
-import 'package:wow_shopping/backend/backend.dart';
 import 'package:wow_shopping/widgets/app_button.dart';
 import 'package:wow_shopping/widgets/common.dart';
 
@@ -29,7 +29,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  late final _logic = LoginLogic(authRepo);
+  late final _logic = LoginLogic(GetIt.I<AuthRepo>());
 
   @override
   Widget build(BuildContext context) {

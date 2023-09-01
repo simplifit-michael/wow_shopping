@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:wow_shopping/app/assets.dart';
 import 'package:wow_shopping/app/theme.dart';
-import 'package:wow_shopping/backend/backend.dart';
+import 'package:wow_shopping/backend/di_widget.dart';
 import 'package:wow_shopping/models/product_item.dart';
 import 'package:wow_shopping/widgets/app_icon.dart';
 
@@ -21,17 +22,17 @@ class WishlistButton extends StatefulWidget {
 class _WishlistButtonState extends State<WishlistButton> {
   void _onTogglePressed(bool value) {
     if (value) {
-      wishlistRepo.addToWishlist(widget.item.id);
+      GetIt.I<WishlistRepo>().addToWishlist(widget.item.id);
     } else {
-      wishlistRepo.removeToWishlist(widget.item.id);
+      GetIt.I<WishlistRepo>().removeToWishlist(widget.item.id);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<bool>(
-      initialData: wishlistRepo.isInWishlist(widget.item),
-      stream: wishlistRepo.streamIsInWishlist(widget.item),
+      initialData: GetIt.I<WishlistRepo>().isInWishlist(widget.item),
+      stream: GetIt.I<WishlistRepo>().streamIsInWishlist(widget.item),
       builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
         final value = snapshot.requireData;
         return IconButton(

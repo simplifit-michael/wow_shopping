@@ -52,13 +52,16 @@ class AuthRepo {
       file.delete();
       currentUser = User.none;
     }
-    return AuthRepo(apiService, file, currentUser)..init();
+    final repo = AuthRepo(apiService, file, currentUser);
+    repo.init();
+    return repo;
   }
 
   void init() {
     _userController = StreamController<User>.broadcast(
       onListen: () => _emitUser(_currentUser),
     );
+    retrieveUser();
   }
 
   void _emitUser(User value) {

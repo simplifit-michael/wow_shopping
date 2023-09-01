@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:wow_shopping/app/theme.dart';
+import 'package:wow_shopping/backend/cart_repo.dart';
 import 'package:wow_shopping/models/product_item.dart';
 import 'package:wow_shopping/widgets/app_button.dart';
 import 'package:wow_shopping/widgets/common.dart';
@@ -8,7 +10,7 @@ import 'package:wow_shopping/widgets/product_card.dart';
 import 'package:wow_shopping/widgets/product_image.dart';
 import 'package:wow_shopping/widgets/sliver_expansion_tile.dart';
 import 'package:wow_shopping/widgets/wishlist_button.dart';
-import 'package:wow_shopping/backend/backend.dart';
+import 'package:wow_shopping/backend/di_widget.dart';
 
 @immutable
 class ProductPage extends StatelessWidget {
@@ -102,7 +104,7 @@ class ProductPage extends StatelessWidget {
             const _SliverDivider(),
             //
             _SliverSimilarItems(
-              similarItems: context.productsRepo.cachedItems,
+              similarItems: GetIt.I<ProductsRepo>().cachedItems,
             ),
             //
             const SliverSafeArea(
@@ -499,7 +501,7 @@ class _SliverProductSizeSelector extends StatelessWidget {
                 onPressed: () {
                   // FIXME: add product to cart
                   // FIXME: specify option for size
-                  context.cartRepo.addToCart(item);
+                  GetIt.I<CartRepo>().addToCart(item);
                 },
                 label: 'Add to cart',
                 style: AppButtonStyle.highlighted,

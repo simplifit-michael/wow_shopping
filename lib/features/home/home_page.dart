@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get_it/get_it.dart';
 import 'package:wow_shopping/app/assets.dart';
-import 'package:wow_shopping/backend/backend.dart';
+import 'package:wow_shopping/backend/di_widget.dart';
 import 'package:wow_shopping/features/home/widgets/promo_carousel.dart';
 import 'package:wow_shopping/features/main/main_screen.dart';
 import 'package:wow_shopping/models/product_item.dart';
@@ -102,7 +103,7 @@ class _SliverTopSellingState extends State<SliverTopSelling> {
   @override
   void initState() {
     super.initState();
-    _futureTopSelling = productsRepo.fetchTopSelling();
+    _futureTopSelling = GetIt.I<ProductsRepo>().fetchTopSelling();
   }
 
   @override

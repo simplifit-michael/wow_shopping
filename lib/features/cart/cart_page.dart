@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:wow_shopping/backend/backend.dart';
+import 'package:get_it/get_it.dart';
+import 'package:wow_shopping/backend/cart_repo.dart';
 import 'package:wow_shopping/features/cart/checkout_page.dart';
 import 'package:wow_shopping/features/cart/widgets/cart_item.dart';
 import 'package:wow_shopping/features/cart/widgets/cart_page_layout.dart';
@@ -21,8 +22,8 @@ class _CartPageState extends State<CartPage> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<CartItem>>(
-      initialData: cartRepo.currentCartItems,
-      stream: cartRepo.streamCartItems,
+      initialData: GetIt.I<CartRepo>().currentCartItems,
+      stream: GetIt.I<CartRepo>().streamCartItems,
       builder: (BuildContext context, AsyncSnapshot<List<CartItem>> snapshot) {
         final items = snapshot.requireData;
         return Material(

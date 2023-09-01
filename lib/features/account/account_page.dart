@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:wow_shopping/backend/backend.dart';
+import 'package:get_it/get_it.dart';
+import 'package:wow_shopping/backend/auth_repo.dart';
 import 'package:wow_shopping/widgets/app_button.dart';
 import 'package:wow_shopping/widgets/common.dart';
 
@@ -24,7 +25,7 @@ class _AccountPageState extends State<AccountPage> {
             verticalMargin48,
             verticalMargin48,
             AppButton(
-              onPressed: () => authRepo.logout(),
+              onPressed: () => GetIt.I<AuthRepo>().logout(),
               label: 'Logout',
             ),
           ],
