@@ -2,12 +2,21 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wow_shopping/backend/api_service.dart';
 import 'package:wow_shopping/models/user.dart';
 import 'package:path_provider/path_provider.dart' as path_provider;
 import 'package:path/path.dart' as path;
 
-class AuthRepo {
+final authProvider = ChangeNotifierProvider<AuthRepo>((ref) {
+  late final AuthRepo authRepo;
+  authRepo =
+      AuthRepo(ApiService(() async => authRepo.token), File(''), User.none);
+  return authRepo;
+});
+
+class AuthRepo extends ChangeNotifier {
   AuthRepo(this._apiService, this._file, this._currentUser);
 
   final ApiService _apiService;
@@ -98,5 +107,6 @@ class AuthRepo {
         await _file.writeAsString(json.encode(_currentUser.toJson()));
       }
     });
+    notifyListeners();
   }
 }
