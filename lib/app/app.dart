@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ui';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -15,6 +16,7 @@ import 'package:wow_shopping/backend/cart_repo.dart';
 import 'package:wow_shopping/backend/wishlist_repo.dart';
 import 'package:wow_shopping/features/account/cubit/account_cubit.dart';
 import 'package:wow_shopping/features/cart/cubit/cart_cubit.dart';
+import 'package:wow_shopping/features/connection_monitor/bloc/connection_monitor_bloc.dart';
 import 'package:wow_shopping/features/login/login_screen.dart';
 import 'package:wow_shopping/features/main/cubit/product_cubit.dart';
 import 'package:wow_shopping/features/main/main_screen.dart';
@@ -89,6 +91,8 @@ class _ShopWowAppState extends State<ShopWowApp> {
                 BlocProvider(create: (context) => ProductCubit(_productsRepo)),
                 BlocProvider(create: (context) => CartCubit(_cartRepo)),
                 BlocProvider(create: (context) => WishlistCubit(_wishlistRepo)),
+                BlocProvider(
+                    create: (context) => ConnectionMonitorBloc(Connectivity())),
               ],
               child: Builder(builder: (context) {
                 return BlocListener<AccountCubit, AccountState>(

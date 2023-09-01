@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:wow_shopping/features/connection_monitor/bloc/connection_monitor_bloc.dart';
 import 'package:wow_shopping/widgets/common.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 
 @immutable
-class ConnectionMonitor extends StatefulWidget {
+class ConnectionMonitor extends StatelessWidget {
   const ConnectionMonitor({
     super.key,
     required this.child,
@@ -12,43 +13,23 @@ class ConnectionMonitor extends StatefulWidget {
   final Widget child;
 
   @override
-  State<ConnectionMonitor> createState() => _ConnectionMonitorState();
-}
-
-class _ConnectionMonitorState extends State<ConnectionMonitor> {
-  final connectivity = Connectivity();
-  late final checkConnectivity = connectivity.checkConnectivity();
-  late final onConnectivityChanged = connectivity.onConnectivityChanged;
-
-  @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: checkConnectivity,
-      builder: (BuildContext context, AsyncSnapshot<ConnectivityResult> snapshot) {
-        if (snapshot.connectionState != ConnectionState.done) {
-          return emptyWidget;
-        }
-        return StreamBuilder(
-          initialData: snapshot.requireData,
-          stream: onConnectivityChanged,
-          builder: (BuildContext context, AsyncSnapshot<ConnectivityResult> snapshot) {
-            final result = snapshot.requireData;
-            return _ConnectivityBannerHost(
-              isConnected: result != ConnectivityResult.none,
-              banner: Material(
-                color: Colors.red,
-                child: Padding(
-                  padding: verticalPadding4 + horizontalPadding12,
-                  child: const Text(
-                    'Please check your internet connection',
-                    style: TextStyle(color: Colors.white),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
+    return BlocBuilder<ConnectionMonitorBloc, ConnectionMonitorState>(
+      builder: (context, state) {
+        return _ConnectivityBannerHost(
+          isConnected: state.isConnected,
+          banner: Material(
+            color: Colors.red,
+            child: Padding(
+              padding: verticalPadding4 + horizontalPadding12,
+              child: const Text(
+                'Please check your internet connection',
+                style: TextStyle(color: Colors.white),
+                textAlign: TextAlign.center,
               ),
-              child: widget.child,
-            );
-          },
+            ),
+          ),
+          child: child,
         );
       },
     );
@@ -68,7 +49,8 @@ class _ConnectivityBannerHost extends StatefulWidget {
   final Widget child;
 
   @override
-  State<_ConnectivityBannerHost> createState() => _ConnectivityBannerHostState();
+  State<_ConnectivityBannerHost> createState() =>
+      _ConnectivityBannerHostState();
 }
 
 class _ConnectivityBannerHostState extends State<_ConnectivityBannerHost>
@@ -129,13 +111,15 @@ class _ConnectivityBannerHostState extends State<_ConnectivityBannerHost>
 enum _ConnectivityBannerHostWidgetId { child, banner }
 
 class _ConnectivityBannerHostDelegate extends MultiChildLayoutDelegate {
-  _ConnectivityBannerHostDelegate(this._animation) : super(relayout: _animation);
+  _ConnectivityBannerHostDelegate(this._animation)
+      : super(relayout: _animation);
 
   final Animation<double> _animation;
 
   @override
   void performLayout(Size size) {
-    layoutChild(_ConnectivityBannerHostWidgetId.child, BoxConstraints.tight(size));
+    layoutChild(
+        _ConnectivityBannerHostWidgetId.child, BoxConstraints.tight(size));
     positionChild(_ConnectivityBannerHostWidgetId.child, Offset.zero);
 
     final bannerSize = layoutChild(
