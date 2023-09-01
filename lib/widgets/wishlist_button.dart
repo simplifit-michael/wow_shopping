@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:wow_shopping/app/assets.dart';
 import 'package:wow_shopping/app/theme.dart';
-import 'package:wow_shopping/backend/backend.dart';
+import 'package:wow_shopping/features/wishlist/cubit/wishlist_cubit.dart';
 import 'package:wow_shopping/models/product_item.dart';
 import 'package:wow_shopping/widgets/app_icon.dart';
 
@@ -21,26 +22,24 @@ class WishlistButton extends StatefulWidget {
 class _WishlistButtonState extends State<WishlistButton> {
   void _onTogglePressed(bool value) {
     if (value) {
-      wishlistRepo.addToWishlist(widget.item.id);
+      context.read<WishlistCubit>().addToWishlist(widget.item.id);
     } else {
-      wishlistRepo.removeToWishlist(widget.item.id);
+      context.read<WishlistCubit>().removeToWishlist(widget.item.id);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<bool>(
-      initialData: wishlistRepo.isInWishlist(widget.item),
-      stream: wishlistRepo.streamIsInWishlist(widget.item),
-      builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-        final value = snapshot.requireData;
+    return BlocBuilder<WishlistCubit, WishlistState>(
+      builder: (context, state) {
+        final isInList = state.items.contains(widget.item);
         return IconButton(
-          onPressed: () => _onTogglePressed(!value),
+          onPressed: () => _onTogglePressed(!isInList),
           icon: AppIcon(
-            iconAsset: value //
+            iconAsset: isInList //
                 ? Assets.iconHeartFilled
                 : Assets.iconHeartEmpty,
-            color: value //
+            color: isInList //
                 ? AppTheme.of(context).appColor
                 : const Color(0xFFD0D0D0),
           ),

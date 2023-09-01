@@ -1,8 +1,6 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:wow_shopping/backend/auth_repo.dart';
-import 'package:wow_shopping/backend/backend.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:wow_shopping/features/account/cubit/account_cubit.dart';
 import 'package:wow_shopping/widgets/app_button.dart';
 import 'package:wow_shopping/widgets/common.dart';
 
@@ -29,29 +27,28 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  late final _logic = LoginLogic(authRepo);
-
   @override
   Widget build(BuildContext context) {
     return Material(
       child: Center(
-        child: StreamBuilder<LoginState>(
-          initialData: _logic.currentState,
-          stream: _logic.streamState,
-          builder: (BuildContext context, AsyncSnapshot<LoginState> snapshot) {
-            final state = snapshot.requireData;
+        child: BlocBuilder<AccountCubit, AccountState>(
+          builder: (context, state) {
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 AppButton(
-                  onPressed: state.isLoading ? null : _logic.onLoginPressed,
+                  onPressed: state.isLoading
+                      ? null
+                      : () => context
+                          .read<AccountCubit>()
+                          .login('userName', 'password'),
                   label: 'Login',
                 ),
                 verticalMargin16,
                 if (state.isLoading) //
                   const CircularProgressIndicator(),
                 if (state.hasError) //
-                  Text(state.lastError),
+                  Text(state.lastError!),
               ],
             );
           },
@@ -59,53 +56,4 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-}
-
-class LoginLogic {
-  LoginLogic(this._authRepo) {
-    _stateController = StreamController<LoginState>.broadcast(
-      onListen: () => _emitState(_state),
-    );
-  }
-
-  final AuthRepo _authRepo;
-  late StreamController<LoginState> _stateController;
-  var _state = LoginState.initial();
-
-  LoginState get currentState => _state;
-
-  Stream<LoginState> get streamState => _stateController.stream;
-
-  void _emitState(LoginState value) {
-    _state = value;
-    _stateController.add(value);
-  }
-
-  Future<void> onLoginPressed() async {
-    _emitState(LoginState.loading());
-    try {
-      await _authRepo.login('username', 'password');
-    } catch (error) {
-      _emitState(LoginState.error(error));
-    }
-  }
-}
-
-class LoginState {
-  LoginState.initial()
-      : isLoading = false,
-        lastError = '';
-
-  LoginState.loading()
-      : isLoading = true,
-        lastError = '';
-
-  LoginState.error(dynamic error)
-      : isLoading = false,
-        lastError = error.toString();
-
-  final bool isLoading;
-  final String lastError;
-
-  bool get hasError => lastError.isNotEmpty;
 }

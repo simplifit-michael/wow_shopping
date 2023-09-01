@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:wow_shopping/backend/backend.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:wow_shopping/features/cart/checkout_page.dart';
+import 'package:wow_shopping/features/cart/cubit/cart_cubit.dart';
 import 'package:wow_shopping/features/cart/widgets/cart_item.dart';
 import 'package:wow_shopping/features/cart/widgets/cart_page_layout.dart';
 import 'package:wow_shopping/features/cart/widgets/checkout_panel.dart';
-import 'package:wow_shopping/models/cart_item.dart';
 import 'package:wow_shopping/widgets/app_button.dart';
 import 'package:wow_shopping/widgets/common.dart';
 import 'package:wow_shopping/widgets/top_nav_bar.dart';
@@ -20,11 +20,8 @@ class CartPage extends StatefulWidget {
 class _CartPageState extends State<CartPage> {
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<List<CartItem>>(
-      initialData: cartRepo.currentCartItems,
-      stream: cartRepo.streamCartItems,
-      builder: (BuildContext context, AsyncSnapshot<List<CartItem>> snapshot) {
-        final items = snapshot.requireData;
+    return BlocBuilder<CartCubit, CartState>(
+      builder: (context, state) {
         return Material(
           child: CartPageLayout(
             checkoutPanel: CheckoutPanel(
@@ -36,9 +33,9 @@ class _CartPageState extends State<CartPage> {
             content: CustomScrollView(
               slivers: [
                 SliverTopNavBar(
-                  title: items.isEmpty
+                  title: state.items.isEmpty
                       ? const Text('No items in your cart')
-                      : Text('${items.length} items in your cart'),
+                      : Text('${state.items.length} items in your cart'),
                   pinned: true,
                   floating: true,
                 ),
@@ -47,7 +44,7 @@ class _CartPageState extends State<CartPage> {
                       // FIXME: onChangeAddress ?
                       ),
                 ),
-                for (final item in items) //
+                for (final item in state.items) //
                   SliverCartItemView(
                     key: Key(item.product.id),
                     item: item,

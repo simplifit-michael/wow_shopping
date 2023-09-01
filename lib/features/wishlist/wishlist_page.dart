@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:wow_shopping/app/assets.dart';
-import 'package:wow_shopping/backend/backend.dart';
+import 'package:wow_shopping/features/wishlist/cubit/wishlist_cubit.dart';
 import 'package:wow_shopping/features/wishlist/widgets/wishlist_item.dart';
 import 'package:wow_shopping/models/product_item.dart';
 import 'package:wow_shopping/widgets/app_button.dart';
@@ -17,7 +18,6 @@ class WishlistPage extends StatefulWidget {
 }
 
 class _WishlistPageState extends State<WishlistPage> {
-  var _wishlistItems = <ProductItem>[];
   final _selectedItems = <String>{};
 
   bool isSelected(ProductItem item) {
@@ -35,7 +35,8 @@ class _WishlistPageState extends State<WishlistPage> {
   }
 
   void toggleSelectAll() {
-    final allIds = _wishlistItems.map((el) => el.id).toList();
+    final state = context.read<WishlistCubit>().state;
+    final allIds = state.items.map((el) => el.id).toList();
     setState(() {
       if (_selectedItems.containsAll(allIds)) {
         _selectedItems.clear();
@@ -48,7 +49,7 @@ class _WishlistPageState extends State<WishlistPage> {
   void _removeSelected() {
     setState(() {
       for (final selected in _selectedItems) {
-        wishlistRepo.removeToWishlist(selected);
+        context.read<WishlistCubit>().removeToWishlist(selected);
       }
       _selectedItems.clear();
     });
@@ -58,9 +59,8 @@ class _WishlistPageState extends State<WishlistPage> {
   Widget build(BuildContext context) {
     return SizedBox.expand(
       child: Material(
-        child: WishlistConsumer(
-          builder: (BuildContext context, List<ProductItem> wishlist) {
-            _wishlistItems = wishlist;
+        child: BlocBuilder<WishlistCubit, WishlistState>(
+          builder: (BuildContext context, state) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -82,9 +82,9 @@ class _WishlistPageState extends State<WishlistPage> {
                     removeTop: true,
                     child: ListView.builder(
                       padding: verticalPadding12,
-                      itemCount: _wishlistItems.length,
+                      itemCount: state.items.length,
                       itemBuilder: (BuildContext context, int index) {
-                        final item = _wishlistItems[index];
+                        final item = state.items[index];
                         return Padding(
                           padding: verticalPadding12,
                           child: WishlistItem(
@@ -139,27 +139,6 @@ class _WishlistPageState extends State<WishlistPage> {
           },
         ),
       ),
-    );
-  }
-}
-
-@immutable
-class WishlistConsumer extends StatelessWidget {
-  const WishlistConsumer({
-    super.key,
-    required this.builder,
-  });
-
-  final Widget Function(BuildContext context, List<ProductItem> wishlist) builder;
-
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<List<ProductItem>>(
-      initialData: context.wishlistRepo.currentWishlistItems,
-      stream: context.wishlistRepo.streamWishlistItems,
-      builder: (BuildContext context, AsyncSnapshot<List<ProductItem>> snapshot) {
-        return builder(context, snapshot.requireData);
-      },
     );
   }
 }

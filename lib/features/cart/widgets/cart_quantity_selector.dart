@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show FilteringTextInputFormatter;
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:wow_shopping/app/assets.dart';
 import 'package:wow_shopping/app/theme.dart';
-import 'package:wow_shopping/backend/backend.dart';
+import 'package:wow_shopping/features/cart/cubit/cart_cubit.dart';
 import 'package:wow_shopping/models/cart_item.dart';
 import 'package:wow_shopping/widgets/app_icon.dart';
 import 'package:wow_shopping/widgets/common.dart';
@@ -45,14 +46,14 @@ class _CartQuantitySelectorState extends State<CartQuantitySelector> {
 
   void _onQuantityChanged() {
     if (_quantityController.text.trim().isNotEmpty) {
-      context.cartRepo.updateQuantity(widget.item.product.id, quantity);
+      context.read<CartCubit>().updateQuantity(widget.item.product.id, quantity);
     }
   }
 
   void _onMinusPressed() {
     final current = quantity;
     if (current == 1) {
-      context.cartRepo.removeToCart(widget.item.product.id);
+      context.read<CartCubit>().removeToCart(widget.item.product.id);
     } else {
       _updateQuantity(quantity - 1);
     }
