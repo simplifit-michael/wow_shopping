@@ -10,12 +10,6 @@
             "type": "dart"
         },
         {
-            "name": "wow_shopping (profile mode)",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "profile"
-        },
-        {
             "name": "wow_shopping (release mode)",
             "request": "launch",
             "type": "dart",
