@@ -9,19 +9,19 @@ import 'package:wow_shopping/models/user.dart';
 import 'package:path_provider/path_provider.dart' as path_provider;
 import 'package:path/path.dart' as path;
 
-final authProvider = ChangeNotifierProvider<AuthRepo>((ref) {
+final authProvider = ChangeNotifierProvider<AuthRepo>((_) {
   late final AuthRepo authRepo;
-  authRepo =
-      AuthRepo(ApiService(() async => authRepo.token), File(''), User.none);
+  final apiService = ApiService(() async => authRepo.token);
+  authRepo = AuthRepo(apiService);
   return authRepo;
 });
 
 class AuthRepo extends ChangeNotifier {
-  AuthRepo(this._apiService, this._file, this._currentUser);
+  AuthRepo(this._apiService);
 
   final ApiService _apiService;
-  final File _file;
-  User _currentUser;
+  late final File _file;
+  late User _currentUser;
 
   Timer? _saveTimer;
   late StreamController<User> _userController;
@@ -38,33 +38,27 @@ class AuthRepo extends ChangeNotifier {
   // FIXME: this should come from storage
   String get token => '123';
 
-  static Future<AuthRepo> create(ApiService apiService) async {
-    User currentUser;
-    File file;
+  Future<void> create() async {
     try {
       final dir = await path_provider.getApplicationDocumentsDirectory();
-      file = File(path.join(dir.path, 'user.json'));
+      _file = File(path.join(dir.path, 'user.json'));
     } catch (error, stackTrace) {
       print('$error\n$stackTrace'); // Send to server?
       rethrow;
     }
     try {
-      if (await file.exists()) {
-        currentUser = User.fromJson(
-          json.decode(await file.readAsString()),
+      if (await _file.exists()) {
+        _currentUser = User.fromJson(
+          json.decode(await _file.readAsString()),
         );
       } else {
-        currentUser = User.none;
+        _currentUser = User.none;
       }
     } catch (error, stackTrace) {
       print('$error\n$stackTrace'); // Send to server?
-      file.delete();
-      currentUser = User.none;
+      _file.delete();
+      _currentUser = User.none;
     }
-    return AuthRepo(apiService, file, currentUser)..init();
-  }
-
-  void init() {
     _userController = StreamController<User>.broadcast(
       onListen: () => _emitUser(_currentUser),
     );
@@ -102,7 +96,11 @@ class AuthRepo extends ChangeNotifier {
     _saveTimer?.cancel();
     _saveTimer = Timer(const Duration(seconds: 1), () async {
       if (_currentUser == User.none) {
-        await _file.delete();
+        try {
+          await _file.delete();
+        } catch (e) {
+          debugPrint(e.toString());
+        }
       } else {
         await _file.writeAsString(json.encode(_currentUser.toJson()));
       }

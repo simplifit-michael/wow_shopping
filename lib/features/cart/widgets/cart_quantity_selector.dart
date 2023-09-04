@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show FilteringTextInputFormatter;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wow_shopping/app/assets.dart';
 import 'package:wow_shopping/app/theme.dart';
-import 'package:wow_shopping/backend/backend.dart';
+import 'package:wow_shopping/backend/cart_repo.dart';
 import 'package:wow_shopping/models/cart_item.dart';
 import 'package:wow_shopping/widgets/app_icon.dart';
 import 'package:wow_shopping/widgets/common.dart';
 
-class CartQuantitySelector extends StatefulWidget {
+class CartQuantitySelector extends ConsumerStatefulWidget {
   const CartQuantitySelector({
     super.key,
     required this.item,
@@ -16,10 +17,10 @@ class CartQuantitySelector extends StatefulWidget {
   final CartItem item;
 
   @override
-  State<CartQuantitySelector> createState() => _CartQuantitySelectorState();
+  ConsumerState<CartQuantitySelector> createState() => _CartQuantitySelectorState();
 }
 
-class _CartQuantitySelectorState extends State<CartQuantitySelector> {
+class _CartQuantitySelectorState extends ConsumerState<CartQuantitySelector> {
   late TextEditingController _quantityController;
   late FocusNode _quantityFocus;
 
@@ -45,14 +46,14 @@ class _CartQuantitySelectorState extends State<CartQuantitySelector> {
 
   void _onQuantityChanged() {
     if (_quantityController.text.trim().isNotEmpty) {
-      context.cartRepo.updateQuantity(widget.item.product.id, quantity);
+      ref.read(cartProvider).updateQuantity(widget.item.product.id, quantity);
     }
   }
 
   void _onMinusPressed() {
     final current = quantity;
     if (current == 1) {
-      context.cartRepo.removeToCart(widget.item.product.id);
+      ref.read(cartProvider).removeToCart(widget.item.product.id);
     } else {
       _updateQuantity(quantity - 1);
     }

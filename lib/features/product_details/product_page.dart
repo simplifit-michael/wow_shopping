@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wow_shopping/app/theme.dart';
+import 'package:wow_shopping/backend/cart_repo.dart';
+import 'package:wow_shopping/backend/product_repo.dart';
 import 'package:wow_shopping/models/product_item.dart';
 import 'package:wow_shopping/widgets/app_button.dart';
 import 'package:wow_shopping/widgets/common.dart';
@@ -8,10 +11,9 @@ import 'package:wow_shopping/widgets/product_card.dart';
 import 'package:wow_shopping/widgets/product_image.dart';
 import 'package:wow_shopping/widgets/sliver_expansion_tile.dart';
 import 'package:wow_shopping/widgets/wishlist_button.dart';
-import 'package:wow_shopping/backend/backend.dart';
 
 @immutable
-class ProductPage extends StatelessWidget {
+class ProductPage extends ConsumerWidget {
   const ProductPage._({
     required this.item,
   });
@@ -48,7 +50,7 @@ class ProductPage extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Material(
       child: SliverExpansionTileHost(
         initialExpanded: const ['description'],
@@ -102,7 +104,7 @@ class ProductPage extends StatelessWidget {
             const _SliverDivider(),
             //
             _SliverSimilarItems(
-              similarItems: context.productsRepo.cachedItems,
+              similarItems: ref.watch(productsProvider).cachedItems,
             ),
             //
             const SliverSafeArea(
@@ -422,7 +424,7 @@ class _PhotoGalleryItem extends StatelessWidget {
 }
 
 @immutable
-class _SliverProductSizeSelector extends StatelessWidget {
+class _SliverProductSizeSelector extends ConsumerWidget {
   const _SliverProductSizeSelector({
     required this.item,
   });
@@ -432,7 +434,7 @@ class _SliverProductSizeSelector extends StatelessWidget {
   static const _sizes = [6, 7, 8, 9, 10, 11, 12, 13];
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return SliverToBoxAdapter(
       child: DecoratedBox(
         decoration: const BoxDecoration(
@@ -499,7 +501,7 @@ class _SliverProductSizeSelector extends StatelessWidget {
                 onPressed: () {
                   // FIXME: add product to cart
                   // FIXME: specify option for size
-                  context.cartRepo.addToCart(item);
+                  ref.read(cartProvider).addToCart(item);
                 },
                 label: 'Add to cart',
                 style: AppButtonStyle.highlighted,

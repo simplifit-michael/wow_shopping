@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:wow_shopping/backend/backend.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wow_shopping/backend/auth_repo.dart';
 import 'package:wow_shopping/widgets/app_button.dart';
 import 'package:wow_shopping/widgets/common.dart';
 
 @immutable
-class AccountPage extends StatefulWidget {
+class AccountPage extends ConsumerStatefulWidget{
   const AccountPage({super.key});
 
   @override
-  State<AccountPage> createState() => _AccountPageState();
+  ConsumerState<AccountPage> createState() => _AccountPageState();
 }
 
-class _AccountPageState extends State<AccountPage> {
+class _AccountPageState extends ConsumerState<AccountPage> {
   @override
   Widget build(BuildContext context) {
     return SizedBox.expand(
@@ -24,7 +25,7 @@ class _AccountPageState extends State<AccountPage> {
             verticalMargin48,
             verticalMargin48,
             AppButton(
-              onPressed: () => authRepo.logout(),
+              onPressed: () => ref.read(authProvider).logout(),
               label: 'Logout',
             ),
           ],

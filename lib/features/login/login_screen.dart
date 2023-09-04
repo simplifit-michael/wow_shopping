@@ -1,12 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wow_shopping/backend/auth_repo.dart';
-import 'package:wow_shopping/backend/backend.dart';
 import 'package:wow_shopping/widgets/app_button.dart';
 import 'package:wow_shopping/widgets/common.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen._();
 
   static Route<void> route() {
@@ -25,11 +25,11 @@ class LoginScreen extends StatefulWidget {
   }
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  late final _logic = LoginLogic(authRepo);
+class _LoginScreenState extends ConsumerState<LoginScreen> {
+  late final _logic = LoginLogic(ref.read(authProvider));
 
   @override
   Widget build(BuildContext context) {

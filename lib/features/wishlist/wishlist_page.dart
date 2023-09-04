@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wow_shopping/app/assets.dart';
-import 'package:wow_shopping/backend/backend.dart';
+import 'package:wow_shopping/backend/wishlist_repo.dart';
 import 'package:wow_shopping/features/wishlist/widgets/wishlist_item.dart';
 import 'package:wow_shopping/models/product_item.dart';
 import 'package:wow_shopping/widgets/app_button.dart';
@@ -9,14 +10,14 @@ import 'package:wow_shopping/widgets/common.dart';
 import 'package:wow_shopping/widgets/top_nav_bar.dart';
 
 @immutable
-class WishlistPage extends StatefulWidget {
+class WishlistPage extends ConsumerStatefulWidget {
   const WishlistPage({super.key});
 
   @override
-  State<WishlistPage> createState() => _WishlistPageState();
+  ConsumerState<WishlistPage> createState() => _WishlistPageState();
 }
 
-class _WishlistPageState extends State<WishlistPage> {
+class _WishlistPageState extends ConsumerState<WishlistPage> {
   var _wishlistItems = <ProductItem>[];
   final _selectedItems = <String>{};
 
@@ -48,7 +49,7 @@ class _WishlistPageState extends State<WishlistPage> {
   void _removeSelected() {
     setState(() {
       for (final selected in _selectedItems) {
-        wishlistRepo.removeToWishlist(selected);
+        ref.read(wishlistProvider).removeFromWishlist(selected);
       }
       _selectedItems.clear();
     });
@@ -144,22 +145,17 @@ class _WishlistPageState extends State<WishlistPage> {
 }
 
 @immutable
-class WishlistConsumer extends StatelessWidget {
+class WishlistConsumer extends ConsumerWidget {
   const WishlistConsumer({
     super.key,
     required this.builder,
   });
 
-  final Widget Function(BuildContext context, List<ProductItem> wishlist) builder;
+  final Widget Function(BuildContext context, List<ProductItem> wishlist)
+      builder;
 
   @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<List<ProductItem>>(
-      initialData: context.wishlistRepo.currentWishlistItems,
-      stream: context.wishlistRepo.streamWishlistItems,
-      builder: (BuildContext context, AsyncSnapshot<List<ProductItem>> snapshot) {
-        return builder(context, snapshot.requireData);
-      },
-    );
+  Widget build(BuildContext context, WidgetRef ref) {
+    return builder(context, ref.watch(wishlistProvider).currentWishlistItems);
   }
 }

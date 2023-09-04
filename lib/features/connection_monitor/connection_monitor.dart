@@ -1,6 +1,34 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wow_shopping/widgets/common.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+
+final connectionProvider = ChangeNotifierProvider((ref) {
+  return ConnectionProvider(Connectivity());
+});
+
+class ConnectionProvider extends ChangeNotifier {
+  late final StreamSubscription _subscription;
+  ConnectionProvider(Connectivity connectivity) {
+    _subscription = connectivity.onConnectivityChanged.listen((event) {});
+  }
+
+  bool _hasConnection = false;
+  bool get hasConnection => _hasConnection;
+  set hasConnection(bool value) {
+    _hasConnection = value;
+    notifyListeners();
+  }
+
+  @override
+  Future<void> dispose() async {
+    await _subscription.cancel();
+    super.dispose();
+  }
+}
 
 @immutable
 class ConnectionMonitor extends StatefulWidget {
@@ -24,14 +52,16 @@ class _ConnectionMonitorState extends State<ConnectionMonitor> {
   Widget build(BuildContext context) {
     return FutureBuilder(
       future: checkConnectivity,
-      builder: (BuildContext context, AsyncSnapshot<ConnectivityResult> snapshot) {
+      builder:
+          (BuildContext context, AsyncSnapshot<ConnectivityResult> snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
           return emptyWidget;
         }
         return StreamBuilder(
           initialData: snapshot.requireData,
           stream: onConnectivityChanged,
-          builder: (BuildContext context, AsyncSnapshot<ConnectivityResult> snapshot) {
+          builder: (BuildContext context,
+              AsyncSnapshot<ConnectivityResult> snapshot) {
             final result = snapshot.requireData;
             return _ConnectivityBannerHost(
               isConnected: result != ConnectivityResult.none,
@@ -68,7 +98,8 @@ class _ConnectivityBannerHost extends StatefulWidget {
   final Widget child;
 
   @override
-  State<_ConnectivityBannerHost> createState() => _ConnectivityBannerHostState();
+  State<_ConnectivityBannerHost> createState() =>
+      _ConnectivityBannerHostState();
 }
 
 class _ConnectivityBannerHostState extends State<_ConnectivityBannerHost>
@@ -129,13 +160,15 @@ class _ConnectivityBannerHostState extends State<_ConnectivityBannerHost>
 enum _ConnectivityBannerHostWidgetId { child, banner }
 
 class _ConnectivityBannerHostDelegate extends MultiChildLayoutDelegate {
-  _ConnectivityBannerHostDelegate(this._animation) : super(relayout: _animation);
+  _ConnectivityBannerHostDelegate(this._animation)
+      : super(relayout: _animation);
 
   final Animation<double> _animation;
 
   @override
   void performLayout(Size size) {
-    layoutChild(_ConnectivityBannerHostWidgetId.child, BoxConstraints.tight(size));
+    layoutChild(
+        _ConnectivityBannerHostWidgetId.child, BoxConstraints.tight(size));
     positionChild(_ConnectivityBannerHostWidgetId.child, Offset.zero);
 
     final bannerSize = layoutChild(
