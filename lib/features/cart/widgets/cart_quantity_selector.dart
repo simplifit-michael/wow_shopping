@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show FilteringTextInputFormatter;
-import 'package:get_it/get_it.dart';
+import 'package:watch_it/watch_it.dart';
 import 'package:wow_shopping/app/assets.dart';
 import 'package:wow_shopping/app/theme.dart';
 import 'package:wow_shopping/backend/cart_repo.dart';
@@ -53,7 +53,7 @@ class _CartQuantitySelectorState extends State<CartQuantitySelector> {
   void _onMinusPressed() {
     final current = quantity;
     if (current == 1) {
-      GetIt.I<CartRepo>().removeToCart(widget.item.product.id);
+      GetIt.I<CartRepo>().removeFromCart(widget.item.product.id);
     } else {
       _updateQuantity(quantity - 1);
     }

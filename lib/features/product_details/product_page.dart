@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
+import 'package:watch_it/watch_it.dart';
 import 'package:wow_shopping/app/theme.dart';
 import 'package:wow_shopping/backend/cart_repo.dart';
 import 'package:wow_shopping/models/product_item.dart';

@@ -321,7 +321,7 @@ packages:
     source: hosted
     version: "2.3.1"
   get_it:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: get_it
       sha256: "66c270f23f1b49d3af9c6651d8c40367319f4abefffc23380e4e7c5efd9fe4a7"
@@ -749,6 +749,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.4"
+  watch_it:
+    dependency: "direct main"
+    description:
+      name: watch_it
+      sha256: "97bd673fe25c52f4a3a6fb3bb47d79e55f977cc2fb8756aff5b188fceeee2882"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   watcher:
     dependency: transitive
     description:

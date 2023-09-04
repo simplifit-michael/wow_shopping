@@ -1,10 +1,9 @@
-import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart' hide TextDirection;
+import 'package:watch_it/watch_it.dart';
 import 'package:wow_shopping/app/config.dart';
 import 'package:wow_shopping/app/theme.dart';
 import 'package:wow_shopping/backend/auth_repo.dart';
@@ -15,7 +14,7 @@ export 'package:wow_shopping/app/config.dart';
 
 const _appTitle = 'Shop Wow';
 
-class ShopWowApp extends StatefulWidget {
+class ShopWowApp extends StatefulWidget with WatchItStatefulWidgetMixin{
   const ShopWowApp({
     super.key,
     required this.config,
@@ -32,29 +31,21 @@ class _ShopWowAppState extends State<ShopWowApp> {
 
   NavigatorState get navigatorState => _navigatorKey.currentState!;
 
-  StreamSubscription<bool>? _subIsLoggedIn;
-  bool _isLoggedIn = false;
+  bool? _isLoggedIn;
 
   @override
   void initState() {
     super.initState();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     Intl.defaultLocale = PlatformDispatcher.instance.locale.toLanguageTag();
-    _subIsLoggedIn =
-        GetIt.I<AuthRepo>().streamIsLoggedIn.listen(_onLoginStateChanged);
-  }
-
-  @override
-  void dispose() {
-    _subIsLoggedIn?.cancel();
-    super.dispose();
+    _isLoggedIn = GetIt.I<AuthRepo>().isLoggedIn;
   }
 
   void _onLoginStateChanged(bool newIsLoggedIn) {
-    if (_isLoggedIn && !newIsLoggedIn) {
+    if (_isLoggedIn??true && !newIsLoggedIn) {
       _isLoggedIn = newIsLoggedIn;
       navigatorState.pushAndRemoveUntil(LoginScreen.route(), (route) => false);
-    } else if (!_isLoggedIn && newIsLoggedIn) {
+    } else if (!(_isLoggedIn??false) && newIsLoggedIn) {
       _isLoggedIn = newIsLoggedIn;
       navigatorState.pushAndRemoveUntil(MainScreen.route(), (route) => false);
     }
@@ -62,6 +53,14 @@ class _ShopWowAppState extends State<ShopWowApp> {
 
   @override
   Widget build(BuildContext context) {
+    registerStreamHandler<AuthRepo, bool?>(
+      select: (repo) => repo.streamIsLoggedIn,
+      handler: (context, isLoggedIn, cancel) {
+        if (!isLoggedIn.hasData) return;
+        _onLoginStateChanged(isLoggedIn.data!);
+      },
+
+    );
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: appOverlayDarkIcons,
       child: MaterialApp(
@@ -71,7 +70,7 @@ class _ShopWowAppState extends State<ShopWowApp> {
         theme: generateLightTheme(),
         onGenerateRoute: (RouteSettings settings) {
           if (settings.name == Navigator.defaultRouteName) {
-            if (!_isLoggedIn) {
+            if (!(_isLoggedIn??false)) {
               return LoginScreen.route();
             }
             return MainScreen.route();

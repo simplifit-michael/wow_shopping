@@ -12,11 +12,10 @@ import 'package:wow_shopping/backend/wishlist_repo.dart';
 
 /// FIXME: Very similar to the [WishlistRepo] and should be refactored out and simplified
 class CartRepo {
-  CartRepo._(this._file, this._storage);
+  CartRepo._(this._file, this.storage);
 
   final File _file;
-  CartStorage _storage;
-  late StreamController<List<CartItem>> _cartController;
+  CartStorage storage;
   Timer? _saveTimer;
 
   static Future<CartRepo> create() async {
@@ -31,53 +30,33 @@ class CartRepo {
       } else {
         storage = CartStorage.empty;
       }
-      return CartRepo._(file, storage)..init();
+      return CartRepo._(file, storage);
     } catch (error, stackTrace) {
       print('$error\n$stackTrace'); // Send to server?
       rethrow;
     }
   }
 
-  void init() {
-    _cartController = StreamController<List<CartItem>>.broadcast(
-      onListen: () => _emitCart(),
-    );
-  }
-
-  void _emitCart() {
-    _cartController.add(currentCartItems);
-  }
-
-  List<CartItem> get currentCartItems => _storage.items;
-
-  Stream<List<CartItem>> get streamCartItems => _cartController.stream;
-
-  Decimal get currentCartTotal => _calculateCartTotal(currentCartItems);
-
-  Stream<Decimal> get streamCartTotal => streamCartItems.map(_calculateCartTotal);
-
-  Decimal _calculateCartTotal(List<CartItem> items) {
-    return items.fold<Decimal>(Decimal.zero, (prev, el) => prev + el.total);
-  }
-
   CartItem cartItemForProduct(ProductItem item) {
-    return _storage.items //
-        .firstWhere((el) => el.product.id == item.id, orElse: () => CartItem.none);
+    return storage.items //
+        .firstWhere((el) => el.product.id == item.id,
+            orElse: () => CartItem.none);
   }
 
   bool cartContainsProduct(ProductItem item) {
     return cartItemForProduct(item) != CartItem.none;
   }
 
-  void addToCart(ProductItem item, {ProductOption option = ProductOption.none}) {
+  void addToCart(ProductItem item,
+      {ProductOption option = ProductOption.none}) {
     final existingItem = cartItemForProduct(item);
     if (existingItem != CartItem.none) {
       updateQuantity(item.id, existingItem.quantity + 1);
       return;
     }
-    _storage = _storage.copyWith(
+    storage = storage.copyWith(
       items: {
-        ..._storage.items,
+        ...storage.items,
         CartItem(
           product: item,
           option: option,
@@ -89,36 +68,30 @@ class CartRepo {
         ),
       },
     );
-    _emitCart();
     _saveCart();
   }
 
   void updateQuantity(String productId, int quantity) {
-    _storage = _storage.copyWith(
-      items: _storage.items.map((item) {
-        if (item.product.id == productId) {
-          return item.copyWith(quantity: quantity);
-        } else {
-          return item;
-        }
-      }),
-    );
-    _emitCart();
+    storage.items = storage.items.map((item) {
+      if (item.product.id == productId) {
+        return item.copyWith(quantity: quantity);
+      } else {
+        return item;
+      }
+    }).toList();
     _saveCart();
   }
 
-  void removeToCart(String productId) {
-    _storage = _storage.copyWith(
-      items: _storage.items.where((el) => el.product.id != productId),
-    );
-    _emitCart();
+  void removeFromCart(String productId) {
+    storage.items =
+        storage.items.where((el) => el.product.id != productId).toList();
     _saveCart();
   }
 
   void _saveCart() {
     _saveTimer?.cancel();
     _saveTimer = Timer(const Duration(seconds: 1), () async {
-      await _file.writeAsString(json.encode(_storage.toJson()));
+      await _file.writeAsString(json.encode(storage.toJson()));
     });
   }
 }

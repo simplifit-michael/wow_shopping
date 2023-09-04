@@ -1,12 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
+import 'package:watch_it/watch_it.dart';
 import 'package:wow_shopping/backend/auth_repo.dart';
 import 'package:wow_shopping/widgets/app_button.dart';
 import 'package:wow_shopping/widgets/common.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends StatefulWidget with WatchItStatefulWidgetMixin{
   const LoginScreen._();
 
   static Route<void> route() {
@@ -33,60 +33,47 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    watch(_logic);
     return Material(
       child: Center(
-        child: StreamBuilder<LoginState>(
-          initialData: _logic.currentState,
-          stream: _logic.streamState,
-          builder: (BuildContext context, AsyncSnapshot<LoginState> snapshot) {
-            final state = snapshot.requireData;
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                AppButton(
-                  onPressed: state.isLoading ? null : _logic.onLoginPressed,
-                  label: 'Login',
-                ),
-                verticalMargin16,
-                if (state.isLoading) //
-                  const CircularProgressIndicator(),
-                if (state.hasError) //
-                  Text(state.lastError),
-              ],
-            );
-          },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AppButton(
+              onPressed:
+                  _logic.currentState.isLoading ? null : _logic.onLoginPressed,
+              label: 'Login',
+            ),
+            verticalMargin16,
+            if (_logic.currentState.isLoading) //
+              const CircularProgressIndicator(),
+            if (_logic.currentState.hasError) //
+              Text(_logic.currentState.lastError),
+          ],
         ),
       ),
     );
   }
 }
 
-class LoginLogic {
-  LoginLogic(this._authRepo) {
-    _stateController = StreamController<LoginState>.broadcast(
-      onListen: () => _emitState(_state),
-    );
-  }
+class LoginLogic with ChangeNotifier {
+  LoginLogic(this._authRepo);
 
   final AuthRepo _authRepo;
-  late StreamController<LoginState> _stateController;
   var _state = LoginState.initial();
 
   LoginState get currentState => _state;
-
-  Stream<LoginState> get streamState => _stateController.stream;
-
-  void _emitState(LoginState value) {
+  set currentState(LoginState value) {
     _state = value;
-    _stateController.add(value);
+    notifyListeners();
   }
 
   Future<void> onLoginPressed() async {
-    _emitState(LoginState.loading());
+    currentState = LoginState.loading();
     try {
       await _authRepo.login('username', 'password');
     } catch (error) {
-      _emitState(LoginState.error(error));
+      currentState = LoginState.error(error);
     }
   }
 }

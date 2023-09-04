@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:wow_shopping/backend/api_service.dart';
 import 'package:wow_shopping/models/user.dart';
 import 'package:path_provider/path_provider.dart' as path_provider;
@@ -15,14 +16,14 @@ class AuthRepo {
   User _currentUser;
 
   Timer? _saveTimer;
-  late StreamController<User> _userController;
+  late StreamController<User?> _userController;
 
-  Stream<User> get streamUser => _userController.stream;
+  Stream<User?> get streamUser => _userController.stream;
 
   User get currentUser => _currentUser;
 
-  Stream<bool> get streamIsLoggedIn => _userController.stream //
-      .map((user) => user != User.none);
+  Stream<bool?> get streamIsLoggedIn => _userController.stream //
+      .map((user) =>user==null?null: user != User.none);
 
   bool get isLoggedIn => _currentUser != User.none;
 
@@ -62,6 +63,7 @@ class AuthRepo {
       onListen: () => _emitUser(_currentUser),
     );
     retrieveUser();
+    
   }
 
   void _emitUser(User value) {
@@ -96,7 +98,11 @@ class AuthRepo {
     _saveTimer?.cancel();
     _saveTimer = Timer(const Duration(seconds: 1), () async {
       if (_currentUser == User.none) {
+      try{
         await _file.delete();
+      }catch(e){
+        debugPrint(e.toString());
+      }
       } else {
         await _file.writeAsString(json.encode(_currentUser.toJson()));
       }
